@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>两离子 Mølmer-Sørensen 门 - IonSimulator</title>
+
+    <link rel="stylesheet" href="../css/simulator.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div class="header">
+        <h1 style="cursor: pointer;" onclick="window.location.href='../index.html'">⚛ IonSimulator</h1>
+        <span>囚禁离子量子操作 · 教学演示 (赛博朋克版)</span>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="entangle">两离子 Mølmer-Sørensen 门</button>
+    </div>
+
+    <div class="main-layout page active" id="page-entangle" style="display: grid;">
+        
+        <div class="panel" id="panel-entangle">
+            <h3>参数控制</h3>
+            <div class="control-group">
+                <label>预设场景 <span class="val"></span></label>
+                <select id="ent-preset">
+                    <option value="perfect">完美 Bell 态</option>
+                    <option value="thermal">热振动态</option>
+                    <option value="damped">有耗散</option>
+                    <option value="">自定义参数</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Lamb-Dicke 参数 η <span class="val" id="val-ent-eta">0.10</span></label>
+                <input type="range" id="ent-eta" min="0.02" max="0.30" step="0.01" value="0.1">
+            </div>
+            <div class="control-group">
+                <label>Rabi 频率 Ω <span class="val" id="val-ent-omega">3.14</span></label>
+                <input type="range" id="ent-omega" min="0.5" max="10" step="0.1" value="3.14">
+            </div>
+            <div class="control-group">
+                <label>失谐 δ <span class="val" id="val-ent-delta">0.10</span></label>
+                <input type="range" id="ent-delta" min="0.02" max="1.0" step="0.01" value="0.1">
+            </div>
+            <div class="control-group">
+                <label>演化时长 T <span class="val" id="val-ent-tmax">40.0</span></label>
+                <input type="range" id="ent-tmax" min="10" max="60" step="1" value="40">
+            </div>
+            <div class="control-group">
+                <label>振动模温度 n̄ <span class="val" id="val-ent-n0">0.0</span></label>
+                <input type="range" id="ent-n0" min="0" max="5" step="0.5" value="0">
+            </div>
+            <div class="control-group">
+                <label>耗散速率 γ <span class="val" id="val-ent-gamma">0.00</span></label>
+                <input type="range" id="ent-gamma" min="0" max="0.5" step="0.02" value="0">
+            </div>
+            <div class="btn-row">
+                <button class="btn active-preset" data-preset="perfect">完美 Bell 态</button>
+                <button class="btn" data-preset="thermal">热振动态</button>
+                <button class="btn" data-preset="damped">有耗散</button>
+            </div>
+            <div class="btn-row">
+                <button class="btn" id="btn-ent-reset">重置默认</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="chart-row cols2">
+                <div class="chart-card">
+                    <h4>布居数 vs 时间</h4>
+                    <canvas id="chart-ent-pop"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>并发度 vs 时间</h4>
+                    <canvas id="chart-ent-conc"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>振动模相空间轨迹</h4>
+                    <canvas id="chart-ent-phase"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>Bell 态保真度</h4>
+                    <div class="gauge-wrap">
+                        <svg class="gauge-svg" viewBox="0 0 180 100" id="gauge-svg"></svg>
+                        <div class="gauge-val" id="gauge-text">100%</div>
+                        <div class="gauge-label" id="gauge-status">✓ 纠缠成功</div>
+                    </div>
+                </div>
+            </div>
+            <div class="tip-bar" id="tip-entangle"></div>
+        </div>
+
+        <div class="ai-panel">
+            <h3>量子 AI 助手</h3>
+            <div class="chat-box" id="chat-box-ent">
+                <div class="chat-msg ai">你好！当前已切换至两离子 Mølmer-Sørensen 门模拟。你可以向我询问关于Lamb-Dicke参数、相空间轨迹闭合条件或热态鲁棒性的问题。</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chat-in-ent" placeholder="输入指令或提问...">
+                <button class="btn button btn-send" onclick="handleSend('ent')">发送</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div style="display: none;">
+        <div id="page-rabi"></div><div id="page-theory"></div>
+        
+        <select id="rabi-preset"></select>
+        <input id="rabi-omega" value="1.57">
+        <input id="rabi-delta" value="0.00">
+        <input id="rabi-tmax" value="10.0">
+        <input id="rabi-gamma" value="0.00">
+        <button id="btn-rabi-reset"></button>
+        
+        <div id="bloch-sphere"></div>
+        <canvas id="chart-rabi-pop"></canvas>
+        <div id="tip-rabi"></div>
+        
+        <div id="chat-box-rabi"></div><input id="chat-in-rabi">
+        <div id="chat-box-theory"></div><input id="chat-in-theory">
+    </div>
+    <script src="../js/simulator.js"></script>
+
+    <script>
+        // 抵消 simulator.js 里面的默认隐藏逻辑，确保排版为网格
+        document.getElementById('page-entangle').style.display = 'grid';
+        
+        // 稍微延迟 50 毫秒，等页面真正显示、有了宽度之后，再让它画图
+        setTimeout(function() {
+            updateEntangle();
+        }, 50);
+    </script>
+
+</body>
+</html>

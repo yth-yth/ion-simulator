@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量子逻辑门构建 - IonSimulator</title>
+
+    <link rel="stylesheet" href="../css/simulator.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        .gate-grid {
+            display: grid; 
+            grid-template-columns: 300px 1fr; 
+            gap: 20px;
+            padding: 16px; height: calc(100vh - 105px); box-sizing: border-box;
+        }
+
+        /* 左侧：门组件库 */
+        /* ================= 修复：左侧门组件库溢出问题 ================= */
+        .gate-library {
+            background: url('../images/框框.png') no-repeat center center !important; 
+            background-size: 100% 100% !important;
+            /* 🌟 核心修复 1：加大上下内边距 (特别是底部加到了 40px)，死死防住越界 */
+            padding: 45px 30px 40px 30px !important; 
+            display: flex; flex-direction: column; 
+            /* 🌟 核心修复 2：将各大块之间的间距从 15px 缩小到 8px */
+            gap: 8px; 
+            overflow-y: auto;
+        }
+        .gate-category {
+            color: var(--cyan); font-size: 1.05rem; font-weight: bold;
+            border-bottom: 1px solid rgba(78, 204, 163, 0.3); padding-bottom: 3px; 
+            margin-top: 5px; /* 减小标题上方的空白 */
+        }
+        .gate-btn-group {
+            display: grid; grid-template-columns: 1fr 1fr; 
+            gap: 8px; /* 减小按钮组内部的缝隙 */
+        }
+        .gate-btn {
+            background: rgba(0, 207, 255, 0.05); border: 1px solid rgba(0, 207, 255, 0.4);
+            color: var(--text); 
+            /* 🌟 核心修复 3：压缩按钮高度，由 12px 降为 8px，字号稍微收敛 */
+            padding: 8px 0; font-size: 1rem; 
+            text-align: center; cursor: pointer; border-radius: 4px; transition: all 0.2s; font-weight: bold;
+        }
+        .gate-btn:hover {
+            background: rgba(0, 207, 255, 0.2); border-color: var(--primary-blue);
+            box-shadow: var(--blue-glow); color: var(--primary-blue); transform: scale(1.02);
+        }
+        .gate-btn.two-qubit {
+            grid-column: span 2; border-color: var(--gold); color: var(--gold);
+            background: rgba(240, 192, 64, 0.05);
+        }
+        .gate-btn.two-qubit:hover {
+            background: rgba(240, 192, 64, 0.2); box-shadow: var(--gold-glow);
+        }
+        
+        .action-btn {
+            background: rgba(240, 64, 64, 0.1); border: 1px solid #f04040; color: #f04040;
+            padding: 10px; text-align: center; cursor: pointer; border-radius: 4px; font-weight: bold;
+            margin-top: auto; /* 自动推到底部 */
+            margin-bottom: 25px; /* 在底部加一个微小的安全缓冲 */
+        }
+        .action-btn:hover { background: rgba(240, 64, 64, 0.3); box-shadow: 0 0 10px rgba(240, 64, 64, 0.6); color: white;}
+
+        /* 右侧：主工作区 */
+        .right-workspace {
+            display: flex; flex-direction: column; gap: 20px; height: 100%;
+        }
+
+        /* 线路板区域 */
+        .circuit-board-container {
+            background: url('../images/框框.png') no-repeat center center; 
+            background-size: 100% 100%;
+            height: 250px; padding: 40px 30px 30px 30px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .circuit-row {
+            display: flex; align-items: center; height: 60px; position: relative; margin: 10px 0;
+        }
+        .qubit-label {
+            width: 60px; color: var(--primary-blue); font-weight: bold; font-size: 1.2rem; text-shadow: var(--blue-glow);
+        }
+        .wire {
+            position: absolute; left: 60px; right: 0; height: 2px; background: rgba(0, 207, 255, 0.3); z-index: 1;
+        }
+        .gates-container {
+            display: flex; z-index: 2; padding-left: 10px; gap: 20px; overflow-x: auto; flex: 1;
+        }
+        .gate-block {
+            min-width: 45px; height: 45px; background: var(--bg-blue); border: 2px solid var(--primary-blue);
+            color: var(--primary-blue); display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 1.2rem; box-shadow: var(--blue-glow); border-radius: 4px;
+        }
+        .gate-block.ctrl {
+            width: 15px; height: 15px; min-width: 15px; border-radius: 50%; background: var(--gold); border: none; box-shadow: var(--gold-glow); margin: 0 15px;
+        }
+        .gate-block.targ {
+            border-color: var(--gold); color: var(--gold); box-shadow: var(--gold-glow);
+        }
+
+        /* 连接控制比特与目标比特的竖线 */
+        .cnot-vertical-line {
+            position: absolute; width: 2px; background: var(--gold); z-index: 0;
+        }
+
+        /* 底部密度矩阵图表 */
+        #dm-card {
+            background: url('../images/框框.png') no-repeat center center !important;
+            background-size: 100% 100% !important;
+            flex: 1; min-height: 0; padding: 50px 30px 30px 30px !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 style="cursor: pointer;" onclick="window.location.href='../index.html'">⚛ IonSimulator</h1>
+        <span>囚禁离子量子操作 · 教学演示 (赛博朋克版)</span>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active">量子逻辑门构建与验证</button>
+    </div>
+
+    <div class="gate-grid">
+        
+        <div class="gate-library">
+            <div class="gate-category">单比特门 (Qubit 0)</div>
+            <div class="gate-btn-group">
+                <div class="gate-btn" onclick="addGate('H', 0)">H 门</div>
+                <div class="gate-btn" onclick="addGate('X', 0)">X 门</div>
+                <div class="gate-btn" onclick="addGate('Y', 0)">Y 门</div>
+                <div class="gate-btn" onclick="addGate('Z', 0)">Z 门</div>
+            </div>
+
+            <div class="gate-category">单比特门 (Qubit 1)</div>
+            <div class="gate-btn-group">
+                <div class="gate-btn" onclick="addGate('H', 1)">H 门</div>
+                <div class="gate-btn" onclick="addGate('X', 1)">X 门</div>
+                <div class="gate-btn" onclick="addGate('Y', 1)">Y 门</div>
+                <div class="gate-btn" onclick="addGate('Z', 1)">Z 门</div>
+            </div>
+
+            <div class="gate-category">双比特门 (纠缠)</div>
+            <div class="gate-btn-group">
+                <div class="gate-btn two-qubit" onclick="addGate('CNOT', 0, 1)">CNOT (Q0 控制 Q1)</div>
+                <div class="gate-btn two-qubit" onclick="addGate('CNOT', 1, 0)">CNOT (Q1 控制 Q0)</div>
+            </div>
+
+            <div class="action-btn" onclick="clearCircuit()">🗑️ 清空线路重置量子态</div>
+        </div>
+
+        <div class="right-workspace">
+            
+            <div class="circuit-board-container">
+                <div style="color: var(--cyan); margin-bottom: 15px; font-weight: bold; text-shadow: var(--cyan-glow);">量子门操作序列</div>
+                
+                <div class="circuit-row" id="row-q0">
+                    <div class="qubit-label">|0⟩_0</div>
+                    <div class="wire"></div>
+                    <div class="gates-container" id="wire-q0">
+                        </div>
+                </div>
+
+                <div class="circuit-row" id="row-q1">
+                    <div class="qubit-label">|0⟩_1</div>
+                    <div class="wire"></div>
+                    <div class="gates-container" id="wire-q1">
+                        </div>
+                </div>
+            </div>
+
+            <div class="chart-card" id="dm-card">
+                <h4 style="text-align: center; color: var(--gold); font-size: 1.1rem; margin-top: -15px; margin-bottom: 10px;">密度矩阵对角元 (基态布居数) 随操作步数的演化</h4>
+                <div style="height: calc(100% - 30px); width: 100%;">
+                    <canvas id="chart-dm"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div style="display: none;">
+        <div id="page-rabi" class="active"></div><div id="page-entangle"></div><div id="page-theory"></div>
+        <select id="rabi-preset"></select><input id="rabi-omega" value="1.57"><input id="rabi-delta" value="0.00">
+        <input id="rabi-tmax" value="10.0"><input id="rabi-gamma" value="0.00"><button id="btn-rabi-reset"></button>
+        <canvas id="chart-rabi-pop"></canvas><div id="tip-rabi"></div><div id="chat-box-rabi"></div><input id="chat-in-rabi">
+        <select id="ent-preset"></select><input id="ent-eta" value="0.1"><input id="ent-omega" value="3.14"><input id="ent-delta" value="0.1">
+        <input id="ent-tmax" value="40"><input id="ent-n0" value="0"><input id="ent-gamma" value="0">
+        <button id="btn-ent-reset"></button>
+        <canvas id="chart-ent-pop"></canvas><canvas id="chart-ent-conc"></canvas><canvas id="chart-ent-phase"></canvas>
+        <svg id="gauge-svg"></svg><div id="gauge-text"></div><div id="gauge-status"></div>
+        <div id="tip-entangle"></div><div id="chat-box-ent"></div><input id="chat-in-ent">
+    </div>
+
+    <script src="../js/simulator.js"></script>
+
+    <script>
+        let dmChart = null;
+        let circuitHistory = []; // 记录操作历史
+        let stateHistory = [];   // 记录每一步的状态向量
+
+        // 初始化二量子比特基态：|00>
+        // 状态向量排列：[c00, c01, c10, c11] 
+        const initialState = [1, 0, 0, 0]; 
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('chart-dm').getContext('2d');
+            dmChart = new Chart(ctx, {
+                type: 'line',
+                data: { 
+                    labels: ['初始态'], 
+                    datasets: [
+                        { label: '|00⟩', data: [1], borderColor: '#00cfff', backgroundColor: '#00cfff20', borderWidth: 3, tension: 0.1 },
+                        { label: '|01⟩', data: [0], borderColor: '#4ecca3', backgroundColor: '#4ecca320', borderWidth: 3, tension: 0.1 },
+                        { label: '|10⟩', data: [0], borderColor: '#f0c040', backgroundColor: '#f0c04020', borderWidth: 3, tension: 0.1 },
+                        { label: '|11⟩', data: [0], borderColor: '#f04040', backgroundColor: '#f0404020', borderWidth: 3, tension: 0.1 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: '操作步数', color: '#8899aa', font: {size: 14} }, ticks: { color: '#eaeaea', font: {size: 14} }, grid: { color: '#ffffff10' } },
+                        y: { min: -0.05, max: 1.05, title: { display: true, text: '布居数概率 (密度矩阵对角元)', color: '#8899aa', font: {size: 14} }, ticks: { color: '#eaeaea', font: {size: 14} }, grid: { color: '#ffffff10' } }
+                    },
+                    plugins: { 
+                        legend: { labels: { color: '#eaeaea', font: {size: 14}, usePointStyle: true } } 
+                    }
+                }
+            });
+
+            stateHistory.push([...initialState]);
+        });
+
+        // 核心量子门算法 (基于态矢量的矩阵乘法简化)
+        function applyQuantumGate(state, gate, target, control) {
+            let [a, b, c, d] = state; // a=|00>, b=|01>, c=|10>, d=|11>
+            const invSqrt2 = 1 / Math.sqrt(2);
+
+            switch(gate) {
+                case 'H':
+                    if (target === 0) return [ (a+c)*invSqrt2, (b+d)*invSqrt2, (a-c)*invSqrt2, (b-d)*invSqrt2 ];
+                    if (target === 1) return [ (a+b)*invSqrt2, (a-b)*invSqrt2, (c+d)*invSqrt2, (c-d)*invSqrt2 ];
+                    break;
+                case 'X':
+                    if (target === 0) return [c, d, a, b];
+                    if (target === 1) return [b, a, d, c];
+                    break;
+                case 'Y': // 忽略全局相位和虚数单位，仅看布居数交换效果等同于X
+                    if (target === 0) return [c, d, a, b];
+                    if (target === 1) return [b, a, d, c];
+                    break;
+                case 'Z': // Z门只改变相位，不改变布居数
+                    return [a, b, c, d]; 
+                case 'CNOT':
+                    if (control === 0 && target === 1) return [a, b, d, c]; // 如果首位是1，翻转末位
+                    if (control === 1 && target === 0) return [a, c, b, d]; // 如果末位是1，翻转首位
+                    break;
+            }
+            return state;
+        }
+
+        // 添加量子门响应函数
+        function addGate(gate, target, control = -1) {
+            // 1. 计算新的量子态
+            let currentState = stateHistory[stateHistory.length - 1];
+            let newState = applyQuantumGate(currentState, gate, target, control);
+            stateHistory.push(newState);
+            circuitHistory.push({ gate, target, control });
+
+            // 2. 更新 UI 线路板
+            const wire0 = document.getElementById('wire-q0');
+            const wire1 = document.getElementById('wire-q1');
+            
+            // 为保持对齐，生成占位符块
+            const emptyBlock = `<div style="min-width: 45px; height: 45px; background: transparent; margin: 0 2px;"></div>`;
+
+            if (gate === 'CNOT') {
+                // 双比特门渲染：一端是控制点，一端是目标门
+                let ctrlHtml = `<div class="gate-block ctrl"></div>`;
+                let targHtml = `<div class="gate-block targ">X</div>`;
+                
+                if(control === 0) {
+                    wire0.insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:center; align-items:center; min-width:45px; margin: 0 2px;">${ctrlHtml}</div>`);
+                    wire1.insertAdjacentHTML('beforeend', `<div style="margin: 0 2px;">${targHtml}</div>`);
+                } else {
+                    wire0.insertAdjacentHTML('beforeend', `<div style="margin: 0 2px;">${targHtml}</div>`);
+                    wire1.insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:center; align-items:center; min-width:45px; margin: 0 2px;">${ctrlHtml}</div>`);
+                }
+            } else {
+                // 单比特门渲染
+                let gateHtml = `<div class="gate-block">${gate}</div>`;
+                if(target === 0) {
+                    wire0.insertAdjacentHTML('beforeend', `<div style="margin: 0 2px;">${gateHtml}</div>`);
+                    wire1.insertAdjacentHTML('beforeend', emptyBlock);
+                } else {
+                    wire0.insertAdjacentHTML('beforeend', emptyBlock);
+                    wire1.insertAdjacentHTML('beforeend', `<div style="margin: 0 2px;">${gateHtml}</div>`);
+                }
+            }
+
+            // 3. 更新图表数据
+            updateChart();
+        }
+
+        function updateChart() {
+            // 提取每一步的 4 个布居数 (幅度平方)
+            let p00=[], p01=[], p10=[], p11=[], labels=[];
+            
+            stateHistory.forEach((state, index) => {
+                labels.push(index === 0 ? '初始态' : `Step ${index}`);
+                // 布居数 P = |c|^2
+                p00.push(Math.pow(state[0], 2));
+                p01.push(Math.pow(state[1], 2));
+                p10.push(Math.pow(state[2], 2));
+                p11.push(Math.pow(state[3], 2));
+            });
+
+            dmChart.data.labels = labels;
+            dmChart.data.datasets[0].data = p00;
+            dmChart.data.datasets[1].data = p01;
+            dmChart.data.datasets[2].data = p10;
+            dmChart.data.datasets[3].data = p11;
+            
+            dmChart.update();
+
+            // 自动将线路板滚动到最右侧
+            document.getElementById('wire-q0').scrollLeft = 9999;
+            document.getElementById('wire-q1').scrollLeft = 9999;
+        }
+
+        function clearCircuit() {
+            document.getElementById('wire-q0').innerHTML = '';
+            document.getElementById('wire-q1').innerHTML = '';
+            circuitHistory = [];
+            stateHistory = [[...initialState]];
+            updateChart();
+        }
+    </script>
+</body>
+</html>

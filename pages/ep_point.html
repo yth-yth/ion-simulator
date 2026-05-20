@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EP点探测 - IonSimulator</title>
+
+    <link rel="stylesheet" href="../css/simulator.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        /* 复用前面经典的左右三栏布局，微调间距 */
+        .ep-grid {
+            display: grid; 
+            grid-template-columns: 320px 1fr 350px; 
+            gap: 20px;
+            padding: 16px; height: calc(100vh - 105px); box-sizing: border-box;
+        }
+
+        #eigen-card {
+            min-height: 280px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 style="cursor: pointer;" onclick="window.location.href='../index.html'">⚛ IonSimulator</h1>
+        <span>囚禁离子量子操作 · 教学演示 (赛博朋克版)</span>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active">非厄米系统奇异点 (EP) 探测</button>
+    </div>
+
+    <div class="ep-grid page active" style="display: grid;">
+        
+        <div class="panel">
+            <h3>参数控制</h3>
+            <div class="control-group">
+                <label>系统相图预设 <span class="val"></span></label>
+                <select id="ep-preset" onchange="applyPreset()">
+                    <option value="pt-sym">PT 对称相 (震荡)</option>
+                    <option value="ep-point" selected>奇异点 EP (临界)</option>
+                    <option value="pt-broken">PT 破缺相 (衰减)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>729nm 激光 Rabi频率 Ω <span class="val" id="val-omega">2.00</span></label>
+                <input type="range" id="ep-omega" min="0.1" max="5.0" step="0.1" value="2.0">
+            </div>
+            
+            <div class="control-group">
+                <label>受控耗散速率 γ <span class="val" id="val-gamma">2.00</span></label>
+                <input type="range" id="ep-gamma" min="0.0" max="5.0" step="0.1" value="2.0">
+            </div>
+
+            <div class="control-group">
+                <label>演化观测时长 T <span class="val" id="val-tmax">3.5</span></label>
+                <input type="range" id="ep-tmax" min="1" max="10" step="0.5" value="3.5">
+            </div>
+
+            <div class="btn-row" style="margin-top: 25px;">
+                <button class="btn" style="width: 100%; border-color: var(--cyan); color: var(--cyan); box-shadow: var(--cyan-glow);" onclick="updateEP()">扫描计算特征值与动力学</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            
+            <div class="chart-card" id="eigen-card" style="padding-top: 30px !important;">
+                <canvas id="chart-eigen"></canvas>
+            </div>
+
+            <div class="chart-card" id="pop-card" style="padding-top: 70px !important; flex: 1;">
+                <canvas id="chart-dynamics"></canvas>
+            </div>
+            
+        </div>
+
+        <div class="ai-panel">
+            <h3>量子 AI 助手</h3>
+            <div class="chat-box" id="chat-box-ep">
+                <div class="chat-msg ai">警告：系统已进入非厄米区域。当前界面探测的是哈密顿量在奇异点（Exceptional Point）附近的相变。
+<br><br>你可以尝试让 <b>Ω = γ</b>，观察特征值实部闭合的现象。对这个物理机制有疑问可以随时提问。</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chat-in-ep" placeholder="提问：什么是PT对称性？">
+                <button class="btn button btn-send" onclick="handleSend('ep')">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/simulator.js"></script>
+
+    <script>
+        let eigenChart, dynamicsChart;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateEP(); 
+
+            ['ep-omega', 'ep-gamma', 'ep-tmax'].forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    let valName = id.replace('ep-', 'val-');
+                    document.getElementById(valName).innerText = parseFloat(this.value).toFixed(2);
+                });
+            });
+        });
+
+        function applyPreset() {
+            const mode = document.getElementById('ep-preset').value;
+            if(mode === 'pt-sym') {
+                document.getElementById('ep-omega').value = 4.0;
+                document.getElementById('ep-gamma').value = 1.0;
+            } else if(mode === 'ep-point') {
+                document.getElementById('ep-omega').value = 2.0;
+                document.getElementById('ep-gamma').value = 2.0;
+            } else if(mode === 'pt-broken') {
+                document.getElementById('ep-omega').value = 1.0;
+                document.getElementById('ep-gamma').value = 4.0;
+            }
+            ['ep-omega', 'ep-gamma'].forEach(id => {
+                document.getElementById(id).dispatchEvent(new Event('input'));
+            });
+            updateEP();
+        }
+
+        function initCharts() {
+            const ctx1 = document.getElementById('chart-eigen').getContext('2d');
+            eigenChart = new Chart(ctx1, {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'Re(λ+) 实部', data: [], borderColor: '#00cfff', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.1 },
+                    { label: 'Re(λ-) 实部', data: [], borderColor: '#00cfff', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.1, borderDash: [5,5] },
+                    { label: 'Im(λ+) 虚部', data: [], borderColor: '#f0c040', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.1 },
+                    { label: 'Im(λ-) 虚部', data: [], borderColor: '#f0c040', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 0, tension: 0.1, borderDash: [5,5] }
+                ]},
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    // 🌟 核心修复：给图表底部增加 20px 的安全内边距，把“参数扫掠”往上托起
+                    layout: { padding: { bottom: 20 } }, 
+                    scales: {
+                        x: { title: { display: true, text: '参数扫掠 (γ / Ω)', color: '#8899aa' }, ticks: { color: '#eaeaea' }, grid: { color: '#ffffff10' } },
+                        y: { title: { display: true, text: '特征值 (Eigenvalues)', color: '#8899aa' }, ticks: { color: '#eaeaea' }, grid: { color: '#ffffff10' } }
+                    },
+                    plugins: { legend: { labels: { color: '#eaeaea' } } }
+                }
+            });
+
+            const ctx2 = document.getElementById('chart-dynamics').getContext('2d');
+            dynamicsChart = new Chart(ctx2, {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'P_e (激发态布居数)', data: [], borderColor: '#4ecca3', backgroundColor: 'rgba(78, 204, 163, 0.2)', borderWidth: 2, pointRadius: 0, fill: true, tension: 0.1 }
+                ]},
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    // 🌟 同步给底部图表也增加安全距离，防越界
+                    layout: { padding: { bottom: 20 } }, 
+                    scales: {
+                        x: { title: { display: true, text: '演化时间 (μs)', color: '#8899aa' }, ticks: { color: '#eaeaea' }, grid: { color: '#ffffff10' } },
+                        y: { min: 0, max: 1.05, title: { display: true, text: '布居数', color: '#8899aa' }, ticks: { color: '#eaeaea' }, grid: { color: '#ffffff10' } }
+                    },
+                    plugins: { legend: { labels: { color: '#eaeaea' } } }
+                }
+            });
+        }
+
+        function updateEP() {
+            const omega = parseFloat(document.getElementById('ep-omega').value);
+            const gamma = parseFloat(document.getElementById('ep-gamma').value);
+            const tmax = parseFloat(document.getElementById('ep-tmax').value);
+
+            let sweepLabels = [], re1 = [], re2 = [], im1 = [], im2 = [];
+            for(let r = 0; r <= 3.0; r += 0.05) {
+                sweepLabels.push(r.toFixed(2));
+                let g_sweep = r * omega; 
+                let discriminant = omega*omega - g_sweep*g_sweep;
+                if(discriminant >= 0) {
+                    let val = 0.5 * Math.sqrt(discriminant);
+                    re1.push(val); re2.push(-val);
+                    im1.push(0); im2.push(0);
+                } else {
+                    let val = 0.5 * Math.sqrt(-discriminant);
+                    re1.push(0); re2.push(0);
+                    im1.push(val); im2.push(-val);
+                }
+            }
+
+            eigenChart.data.labels = sweepLabels;
+            eigenChart.data.datasets[0].data = re1;
+            eigenChart.data.datasets[1].data = re2;
+            eigenChart.data.datasets[2].data = im1;
+            eigenChart.data.datasets[3].data = im2;
+            eigenChart.update();
+
+            let tLabels = [], popData = [];
+            let discriminant = omega*omega - gamma*gamma;
+            
+            for(let t = 0; t <= tmax; t += 0.05) {
+                tLabels.push(t.toFixed(2));
+                let p = 0;
+                if (discriminant > 0) {
+                    let freq = 0.5 * Math.sqrt(discriminant);
+                    p = Math.sin(freq * t) * Math.sin(freq * t) * Math.exp(-0.5 * gamma * t);
+                } else if (discriminant === 0) {
+                    p = (0.25 * omega * omega * t * t) * Math.exp(-0.5 * gamma * t);
+                } else {
+                    let rate = 0.5 * Math.sqrt(-discriminant);
+                    let sinhVal = (Math.exp(rate*t) - Math.exp(-rate*t))/2;
+                    p = (omega*omega / (4 * rate*rate)) * sinhVal * sinhVal * Math.exp(-0.5 * gamma * t);
+                }
+                popData.push(p);
+            }
+
+            dynamicsChart.data.labels = tLabels;
+            dynamicsChart.data.datasets[0].data = popData;
+            dynamicsChart.update();
+
+            if (typeof handleSend === "function") {
+                document.getElementById('chat-in-ep').onkeydown = function(e){
+                    if(e.key === 'Enter') handleSend('ep');
+                };
+            }
+        }
+    </script>
+</body>
+</html>

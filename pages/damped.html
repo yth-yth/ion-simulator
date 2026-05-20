@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>有耗散演化 - IonSimulator</title>
+
+    <link rel="stylesheet" href="../css/simulator.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div class="header">
+        <h1 style="cursor: pointer;" onclick="window.location.href='../index.html'">⚛ IonSimulator</h1>
+        <span>囚禁离子量子操作 · 教学演示 (赛博朋克版)</span>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="rabi">单离子有耗散演化</button>
+    </div>
+
+    <div class="main-layout page active" id="page-rabi" style="display: grid;">
+        
+        <div class="panel" id="panel-rabi">
+            <h3>参数控制</h3>
+            <div class="control-group">
+                <label>预设场景 <span class="val"></span></label>
+                <select id="rabi-preset">
+                    <option value="resonant">共振 Rabi 振荡</option>
+                    <option value="detuned">失谐 Rabi 振荡</option>
+                    <option value="damped" selected>有耗散的 Rabi 振荡</option>
+                    <option disabled>──────────</option>
+                    <option value="gate-x">X 门 (比特翻转)</option>
+                    <option value="gate-h">H 门 (阿达马门)</option>
+                    <option value="gate-pi2">π/2 脉冲 (制备叠加态)</option>
+                    <option disabled>──────────</option>
+                    <option value="">自定义参数</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Rabi 频率 Ω <span class="val" id="val-rabi-omega">1.57</span></label>
+                <input type="range" id="rabi-omega" min="0.1" max="10" step="0.1" value="1.57">
+            </div>
+            
+            <div class="control-group">
+                <label>失谐 δ <span class="val" id="val-rabi-delta">0.00</span></label>
+                <input type="range" id="rabi-delta" min="0" max="6.28" step="0.05" value="0">
+            </div>
+            
+            <div class="control-group">
+                <label>演化时长 T <span class="val" id="val-rabi-tmax">10.0</span></label>
+                <input type="range" id="rabi-tmax" min="2" max="20" step="0.5" value="10">
+            </div>
+
+            <div class="control-group">
+                <label>耗散速率 γ <span class="val" id="val-rabi-gamma">0.30</span></label>
+                <input type="range" id="rabi-gamma" min="0" max="1" step="0.05" value="0.30">
+            </div>
+
+            <div class="btn-row">
+                <button class="btn" id="btn-rabi-reset">重置默认</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="chart-card" id="bloch-card">
+                <div class="bloch-wrap" id="bloch-sphere"></div>
+            </div>
+            <div class="chart-card" id="pop-card">
+                <h4 style="text-align: center; color: var(--gold); font-size: 16px; margin-bottom: 5px;">布居数随时间演化图像</h4>
+                <canvas id="chart-rabi-pop"></canvas>
+            </div>
+            <div class="tip-bar" id="tip-rabi"></div>
+        </div>
+
+        <div class="ai-panel">
+            <h3>量子 AI 助手</h3>
+            <div class="chat-box" id="chat-box-rabi">
+                <div class="chat-msg ai">你好！我是 IonGPT。当前已进入单离子有耗散演化模拟。你可以调节左侧的“耗散速率 γ”，观察环境噪声对量子相干性的破坏过程，或者在下方问我关于退相干的物理原理。</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chat-in-rabi" placeholder="输入指令或提问...">
+                <button class="btn button btn-send" onclick="handleSend('rabi')">发送</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div style="display: none;">
+        <div id="page-entangle"></div><div id="page-theory"></div>
+        <select id="ent-preset"></select>
+        <input id="ent-eta" value="0.1"><input id="ent-omega" value="3.14"><input id="ent-delta" value="0.1">
+        <input id="ent-tmax" value="40"><input id="ent-n0" value="0"><input id="ent-gamma" value="0">
+        <button id="btn-ent-reset"></button>
+        <canvas id="chart-ent-pop"></canvas><canvas id="chart-ent-conc"></canvas><canvas id="chart-ent-phase"></canvas>
+        <svg id="gauge-svg"></svg><div id="gauge-text"></div><div id="gauge-status"></div>
+        <div id="tip-entangle"></div>
+        <div id="chat-box-ent"></div><input id="chat-in-ent">
+        <div id="chat-box-theory"></div><input id="chat-in-theory">
+    </div>
+    <script src="../js/simulator.js"></script>
+
+    <script>
+        // 确保网格排版不乱
+        document.getElementById('page-rabi').style.display = 'grid';
+        
+        // 延迟触发：一进页面直接切换到“有耗散”预设，并渲染图表
+        setTimeout(function() {
+            document.getElementById('rabi-preset').value = 'damped';
+            document.getElementById('rabi-gamma').value = 0.30;
+            updateRabi();
+        }, 50);
+    </script>
+
+</body>
+</html>

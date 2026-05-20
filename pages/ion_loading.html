@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>离子载入 - IonSimulator</title>
+
+    <link rel="stylesheet" href="../css/simulator.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        /* 页面布局：左侧控制栏 + 右侧主工作区 */
+        .loading-grid {
+            display: grid; 
+            grid-template-columns: 320px 1fr; 
+            gap: 20px;
+            padding: 16px; height: calc(100vh - 105px); box-sizing: border-box;
+        }
+
+        /* 顶部三个区块的布局：2个图片框 + 1个能级图框 */
+        .top-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            height: 350px;
+        }
+        
+        .img-box {
+            border: 1px solid var(--primary-blue);
+            background: var(--panel-blue); border-radius: 4px; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 发光信号图区 */
+        .bottom-chart {
+            flex: 1; min-height: 250px; margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 style="cursor: pointer;" onclick="window.location.href='../index.html'">⚛ IonSimulator</h1>
+        <span>离子载入与冷却系统 · 教学演示</span>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active">离子载入与激光冷却</button>
+    </div>
+
+    <div class="loading-grid">
+        
+        <div class="panel">
+            <h3>载入参数</h3>
+            <div class="control-group">
+                <label>离子数目 <span class="val" id="val-ions">1</span></label>
+                <input type="range" id="ion-count" min="1" max="10" step="1" value="1">
+            </div>
+            <div class="control-group">
+                <label>冷却激光功率 <span class="val" id="val-laser">50</span>%</label>
+                <input type="range" id="laser-power" min="0" max="100" step="1" value="50">
+            </div>
+            <div class="control-group">
+                <label>真空度 (Pa) <span class="val">1e-8</span></label>
+            </div>
+            <button class="btn" style="width: 100%; margin-top: 20px;" onclick="loadIons()">执行载入</button>
+        </div>
+
+        <div class="content-area">
+            <div class="top-row">
+                <div class="img-box"><img src="../images/侧面.jpg" alt="仪器1"></div>
+                <div class="img-box"><img src="../images/正面.jpg" alt="仪器2"></div>
+                <div class="chart-card">
+                    <h4 style="text-align: center; color: var(--gold);">冷却能级图</h4>
+                    <div id="bloch-sphere" style="height: 200px;"></div>
+                </div>
+            </div>
+
+            <div class="chart-card bottom-chart">
+                <h4 style="text-align: center; color: var(--cyan);">离子荧光信号强度 (实时监测)</h4>
+                <canvas id="chart-fluorescence"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let fluoChart;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('chart-fluorescence').getContext('2d');
+            fluoChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: Array(50).fill(''), datasets: [{ 
+                    label: '荧光强度 (a.u.)', data: Array(50).fill(0), 
+                    borderColor: '#4ecca3', backgroundColor: 'rgba(78, 204, 163, 0.2)', 
+                    fill: true, tension: 0.4, borderWidth: 2 
+                }]},
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    scales: { y: { min: 0, max: 100 } }
+                }
+            });
+            
+            // 实时更新发光图效果
+            setInterval(updateFluorescence, 100);
+        });
+
+        function updateFluorescence() {
+    // 1. 获取基础物理参数
+    const ionCount = parseInt(document.getElementById('ion-count').value);
+    const power = parseFloat(document.getElementById('laser-power').value);
+    const omega = power / 10.0; 
+    let t = (performance.now() / 1000) * 2; 
+
+    // 2. 计算理想概率 (Rabi 振荡)
+    let p_excited = Math.pow(Math.sin(omega * t / 2), 2);
+
+    // 3. 统计模拟：模拟每个离子是否发光
+    // 这是一个伯努利试验：每个离子独立决定是否处于激发态
+    let excitedIons = 0;
+    for (let i = 0; i < ionCount; i++) {
+        if (Math.random() < p_excited) {
+            excitedIons++;
+        }
+    }
+
+    // 4. 物理参数模拟
+    const backgroundNoise = 5.0; // 背景杂散光，确保信号不会归零
+    const photonRatePerIon = 20.0; // 每个处于激发态的离子发出的光强系数
+    
+    // 5. 加入散粒噪声 (Shot Noise)
+    // 信号 = (激发离子数 * 发光强度) + 背景噪声 + 随机波动
+    // 模拟随机波动：使用一个基于离子数的随机扰动
+    let shotNoise = (Math.random() - 0.5) * Math.sqrt(excitedIons + 1) * 2;
+    
+    let totalIntensity = (excitedIons * photonRatePerIon) + backgroundNoise + shotNoise;
+
+    // 6. 更新图表数据
+    fluoChart.data.datasets[0].data.shift();
+    fluoChart.data.datasets[0].data.push(totalIntensity);
+    fluoChart.update('none');
+}
+
+        function loadIons() {
+            document.getElementById('val-ions').textContent = document.getElementById('ion-count').value;
+            document.getElementById('val-laser').textContent = document.getElementById('laser-power').value;
+            alert("离子载入序列已启动，荧光信号正在稳定...");
+        }
+
+        // 绑定数值显示更新
+        document.getElementById('ion-count').oninput = (e) => document.getElementById('val-ions').textContent = e.target.value;
+        document.getElementById('laser-power').oninput = (e) => document.getElementById('val-laser').textContent = e.target.value;
+    </script>
+</body>
+</html>
