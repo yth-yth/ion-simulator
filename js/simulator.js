@@ -496,12 +496,12 @@ function updateEntangle() {
   const gamma = parseFloat(document.getElementById('ent-gamma').value);
   const tMax  = parseFloat(document.getElementById('ent-tmax').value);
   
-  document.getElementById('val-ent-eta').textContent = eta.toFixed(2);
-  document.getElementById('val-ent-omega').textContent = omega.toFixed(2);
-  document.getElementById('val-ent-delta').textContent = delta.toFixed(2);
-  document.getElementById('val-ent-tmax').textContent = tMax.toFixed(1);
-  document.getElementById('val-ent-n0').textContent = n0.toFixed(1);
-  document.getElementById('val-ent-gamma').textContent = gamma.toFixed(2);
+  if (document.getElementById('val-ent-eta')) document.getElementById('val-ent-eta').textContent = eta.toFixed(2);
+  if (document.getElementById('val-ent-omega')) document.getElementById('val-ent-omega').textContent = omega.toFixed(2);
+  if (document.getElementById('val-ent-delta')) document.getElementById('val-ent-delta').textContent = delta.toFixed(2);
+  if (document.getElementById('val-ent-tmax')) document.getElementById('val-ent-tmax').textContent = tMax.toFixed(1);
+  if (document.getElementById('val-ent-n0')) document.getElementById('val-ent-n0').textContent = n0.toFixed(1);
+  if (document.getElementById('val-ent-gamma')) document.getElementById('val-ent-gamma').textContent = gamma.toFixed(2);
   
   const d = getEntangleData(eta, omega, delta, n0, gamma, tMax);
   const gateT = d.gateT;
@@ -702,7 +702,7 @@ updateEntangle();
 
 // ===================== REAL GEMINI AI INTEGRATION =====================
 // ⚠️ 在这里填入你的 Gemini API 密钥
-const GEMINI_API_KEY = "AIzaSyCajc2pxwhesChOdEzcmW1iqncZIT_R7Pg"; // 记得换成你的真实密钥
+const GEMINI_API_KEY = "AIzaSyDG04n-jH8Y99NWjYZrvZzjxoe5cclRni0"; // 记得换成你的真实密钥
 
 async function handleSend(type) {
   // 终极防错机制：支持 rabi, ent, theory 三个频道
@@ -710,7 +710,11 @@ async function handleSend(type) {
     window.chatHistory = {
       'rabi': [],
       'ent': [],
-      'theory': []
+      'theory': [],
+      'damped': [],
+      'ion': [],
+      'laser': [],
+      'ep': []
     };
   }
 
@@ -744,6 +748,11 @@ async function handleSend(type) {
   let pageName = '物理原理教学';
   if(type === 'rabi') pageName = '单离子 Rabi 振荡';
   else if(type === 'ent') pageName = '两离子 Mølmer-Sørensen 门';
+  else if(type === 'ep') pageName = 'ep 点探测';
+  else if(type === 'gate') pageName = '量子逻辑门构建';
+  else if(type === 'ion') pageName = '离子载入系统';
+  else if(type === 'laser') pageName = '激光参数调控序列';
+  else if(type === 'damped') pageName = '有耗散的 Rabi 振荡';
 
   const systemInstruction = `你现在是 IonSimulator 离子阱量子计算教学演示的专属 AI 物理助教。
 当前用户正在操作的是【${pageName}】界面。
@@ -820,7 +829,7 @@ async function handleSend(type) {
 }
 
 // 绑定三个页面的回车键发送事件
-['chat-in-rabi', 'chat-in-ent', 'chat-in-theory'].forEach(id => {
+['chat-in-rabi', 'chat-in-ent', 'chat-in-theory', 'chat-in-damped', 'chat-in-ion', 'chat-in-laser', 'chat-in-ep'].forEach(id => {
   const inputElement = document.getElementById(id);
   if (inputElement) {
     inputElement.addEventListener('keydown', function(e) {
@@ -831,3 +840,13 @@ async function handleSend(type) {
     });
   }
 });
+
+
+
+// ===================== 全局 AI 面板控制 =====================
+function toggleAIPanel() {
+    const panel = document.getElementById('global-ai-panel');
+    if (panel) {
+        panel.classList.toggle('open');
+    }
+}

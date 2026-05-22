@@ -125,7 +125,161 @@
             color: var(--cyan); text-shadow: var(--cyan-glow); font-size: 20px; 
             margin: 30px 0 15px 0; align-self: flex-start; width: 100%; border-bottom: 1px solid rgba(78, 204, 163, 0.3); padding-bottom: 5px;
         }
+
+        /* --- 1. 侧边栏外框 (尺寸与位置终极微调版) --- */
+        .ai-sidebar {
+            position: fixed;
+            
+            /* 🚀 核心 1：往下移，彻底避开顶部的导航栏和发光蓝线 */
+            top: 75px; 
+            right: -520px; 
+            
+            /* 🚀 核心 2：整体改小，宽度收窄，高度减小，留出呼吸感 */
+            width: 410px; 
+            height: calc(100vh - 100px); 
+            
+            z-index: 9998;
+            display: flex;
+            flex-direction: column;
+            
+            background-image: url('images/框框.png') !important; 
+            background-repeat: no-repeat !important;
+            background-position: center center !important;
+            background-size: 100% 100% !important;
+            background-color: transparent !important;
+            
+            border: none !important;
+            box-shadow: none !important;
+
+            /* 🚀 核心 3：精准调整内边距 (上、右、下、左) */
+            /* 将底部的 padding 加大到 75px，把卡槽和输入框强行往上顶，完美避开底部花纹！ */
+            padding: 50px 30px 75px 30px !important; 
+            
+            box-sizing: border-box;
+            transition: right 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .ai-sidebar.open {
+            right: 20px; 
+        }
+
+        /* --- 2. 头部样式 --- */
+        .ai-sidebar-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; padding: 0 5px;
+        }
+        .ai-sidebar-title {
+            color: var(--cyan); font-size: 18px; font-weight: bold;
+            text-shadow: var(--cyan-glow); margin: 0; letter-spacing: 1px;
+        }
+        .ai-close-btn {
+            background: none; border: none; color: var(--gold);
+            font-size: 20px; cursor: pointer; transition: 0.2s;
+            text-shadow: 0 0 10px rgba(240, 192, 64, 0.6);
+        }
+        .ai-close-btn:hover { transform: scale(1.1); color: #fff; }
+
+        /* 👑 3. 核心卡槽：深蓝色 + 毛玻璃 (复刻截图质感) --- */
+        .ai-inner-slot {
+            flex: 1; /* 自动撑满中间高度 */
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            
+            /* 卡槽底色：深邃的青蓝色调 */
+            background: rgba(11, 20, 35, 0.65); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            
+            /* 边缘一圈极细的青色发光线 */
+            border: 1px solid rgba(0, 207, 255, 0.15);
+            box-shadow: inset 0 0 20px rgba(0, 207, 255, 0.05);
+            border-radius: 4px;
+            
+            padding: 15px 5px 15px 15px;
+            margin-bottom: 15px; /* 与底部输入框拉开距离 */
+        }
+
+        /* 聊天滚动区 */
+        .chat-box {
+            flex: 1; overflow-y: auto; padding-right: 10px;
+            display: flex; flex-direction: column;
+        }
+
+        /* 气泡样式 */
+        .chat-msg {
+            padding: 12px 16px; border-radius: 4px; max-width: 85%;
+            line-height: 1.6; font-size: 14px; margin-bottom: 15px;
+        }
+        /* AI 消息框：比卡槽稍微亮一点的深灰蓝 */
+        .chat-msg.ai {
+            background: rgba(15, 34, 66, 0.8); color: var(--text);
+            border-left: 2px solid var(--primary-blue); align-self: flex-start;
+        }
+        .chat-msg.ai b { color: var(--primary-blue); font-weight: normal; }
+        
+        /* 用户消息：金色系 */
+        .chat-msg.user {
+            background: rgba(240, 192, 64, 0.08); color: var(--gold);
+            border-right: 2px solid var(--gold); align-self: flex-end;
+        }
+
+        /* --- 4. 底部输入区 --- */
+        .chat-input-area {
+            display: flex; gap: 10px; align-items: stretch; height: 40px;
+        }
+        .chat-input {
+            flex: 1; padding: 0 15px; border-radius: 4px;
+            background: rgba(5, 10, 20, 0.6); /* 接近黑色的深蓝 */
+            border: 1px solid rgba(0, 207, 255, 0.4);
+            color: var(--text); font-size: 14px;
+            outline: none; transition: 0.3s;
+        }
+        .chat-input:focus {
+            border-color: var(--cyan);
+            box-shadow: inset 0 0 10px rgba(78, 204, 163, 0.2), 0 0 5px rgba(78, 204, 163, 0.3);
+        }
+        .btn-send {
+            padding: 0 20px; border-radius: 4px; background: transparent;
+            border: 1px solid var(--primary-blue); color: var(--primary-blue);
+            cursor: pointer; font-size: 14px; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-send:hover {
+            background: rgba(0, 207, 255, 0.2); color: #fff;
+            box-shadow: 0 0 10px rgba(0, 207, 255, 0.5);
+        }
+
+
+
+        /* ================== 悬浮唤醒按钮 (恢复皮肤并移至右上角) ================== */
+        .ai-fab {
+            position: fixed;
+            /* 🚀 核心修改：从 bottom 改为 top，移到右上角 */
+            top: 15px;       
+            /* 预留 90px 的距离，是为了防止它和右上角原本的“退出系统”按钮重叠打架 */
+            right: 90px;     
+            
+            width: 50px; 
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(9, 14, 31, 0.8);
+            border: 2px solid var(--cyan);
+            box-shadow: 0 0 15px rgba(78, 204, 163, 0.5);
+            color: var(--cyan);
+            font-size: 24px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            z-index: 9999;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .ai-fab:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 0 25px rgba(78, 204, 163, 0.9);
+            background: rgba(78, 204, 163, 0.2);
+        }
     </style>
+
+    
 </head>
 <body>
  
@@ -207,7 +361,27 @@
         </div>
 
     </div>
+<button class="ai-fab" onclick="toggleAIPanel()" title="召唤 IonGPT">🤖</button>
 
+<div class="ai-sidebar" id="global-ai-panel">
+        
+        <div class="ai-sidebar-header">
+            <h3 class="ai-sidebar-title">量子 AI 助手</h3>
+            <button class="ai-close-btn" onclick="toggleAIPanel()">✖</button>
+        </div>
+
+        <div class="ai-inner-slot">
+            <div class="chat-box" id="chat-box-global">
+                <div class="chat-msg ai">你好！我是 IonGPT。当前已进入量子模拟器，你可以调整左侧的参数，或者在下方问我任何物理原理。</div>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chat-in-global" placeholder="输入指令或提问...">
+            <button class="btn-send" onclick="handleSend('global')">发送</button>
+        </div>
+
+    </div>
     <script>
     // 页面加载前执行检查
     (function checkAuth() {
@@ -251,6 +425,140 @@
         function logout() {
             localStorage.removeItem('isAuthenticated');
             window.location.href = 'login.html';
+        }
+
+
+        // ================== 页面加载时的路由检测 ==================
+    window.addEventListener('DOMContentLoaded', () => {
+        // 检查 URL 中是否带有 #experiments 哈希
+        if (window.location.hash === '#experiments') {
+            
+            // 1. 隐藏所有屏幕
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // 2. 直接激活实验选择界面
+            document.getElementById('screen-experiments').classList.add('active');
+            
+            // 3. 伪造历史路径栈 (这样点击顶部的"< 返回上级"还能正常退回主菜单)
+            historyStack = ['screen-home', 'screen-mode', 'screen-main-menu', 'screen-experiments'];
+            updateBackButton();
+            
+            // 4. (可选) 清除哈希，保持地址栏整洁
+            history.replaceState(null, null, ' ');
+        }
+    });
+
+
+    // ================== 量子 AI 面板控制 ==================
+        function toggleAIPanel() {
+            const panel = document.getElementById('global-ai-panel');
+            if (panel) {
+                panel.classList.toggle('open');
+            } else {
+                console.error("未能找到 AI 面板元素！");
+            }
+        }
+
+
+
+        // ================== 全局量子 AI 通信引擎 (防弹修复版) ==================
+        const GEMINI_API_KEY = "AIzaSyDG04n-jH8Y99NWjYZrvZzjxoe5cclRni0"; // 确保密钥有效
+
+        async function handleSend(type) {
+            // 1. 极其严谨的上下文记忆初始化
+            if (!window.chatHistory) window.chatHistory = {};
+            if (!window.chatHistory[type]) window.chatHistory[type] = [];
+            
+            const inputEl = document.getElementById(`chat-in-${type}`);
+            const boxEl = document.getElementById(`chat-box-${type}`);
+            if (!inputEl || !boxEl) return;
+            
+            const text = inputEl.value.trim();
+            if (!text) return;
+            
+            // 2. 渲染用户消息
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chat-msg user';
+            userMsg.textContent = text;
+            boxEl.appendChild(userMsg);
+            
+            inputEl.value = '';
+            boxEl.scrollTop = boxEl.scrollHeight;
+            
+            // 3. 渲染 AI 加载状态
+            const typingMsg = document.createElement('div');
+            typingMsg.className = 'chat-msg ai';
+            typingMsg.innerHTML = '<span style="color:var(--cyan); opacity:0.8;">[系统] 正在穿透屏障，连接量子计算核心...</span>';
+            boxEl.appendChild(typingMsg);
+            boxEl.scrollTop = boxEl.scrollHeight;
+
+            try {
+                // 将历史记录压入（放在 try 里面更安全）
+                const systemInstruction = "你是 IonSimulator 的全局 AI 物理助教。当前用户正在主菜单界面。请用严谨且直白的赛博朋克风格回答物理和操作问题。";
+                window.chatHistory[type].push({ role: "user", parts: [{ text: text }] });
+
+                // 注意：我把模型改成了更稳定的 gemini-1.5-flash，如果你有特定要求可以改回
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        system_instruction: { parts: [{ text: systemInstruction }] },
+                        contents: window.chatHistory[type]
+                    })
+                });
+
+                const data = await response.json();
+
+                // 【核心修复】：安全移除加载提示（只在它还存在时才移除）
+                if (typingMsg.parentNode === boxEl) {
+                    boxEl.removeChild(typingMsg);
+                }
+
+                if (!response.ok || data.error) {
+                    throw new Error((data.error && data.error.message) || `通道阻断，状态码: ${response.status}`);
+                }
+
+                const aiText = data.candidates[0].content.parts[0].text;
+                window.chatHistory[type].push({ role: "model", parts: [{ text: aiText }] });
+
+                // 4. 渲染 AI 成功回复
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'chat-msg ai';
+                aiMsg.innerHTML = aiText
+                    .replace(/\*\*(.*?)\*\*/g, '<b style="color:var(--primary-blue)">$1</b>')
+                    .replace(/\*(.*?)\*/g, '<em style="color:var(--gold); font-style:normal;">$1</em>')
+                    .replace(/\n/g, '<br>');
+                boxEl.appendChild(aiMsg);
+                boxEl.scrollTop = boxEl.scrollHeight;
+
+            } catch (error) {
+                // 【核心修复】：即使报错，也安全地清理掉加载提示语
+                if (typingMsg.parentNode === boxEl) {
+                    boxEl.removeChild(typingMsg);
+                }
+                
+                // 渲染错误提示框（这次绝对不会被吞掉了）
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'chat-msg ai';
+                errorMsg.style.borderLeftColor = 'var(--gold)';
+                
+                // 判断是否是经典的国内网络直连报错
+                let errorDetails = error.message;
+                if (errorDetails.includes("Failed to fetch") || errorDetails.includes("NetworkError")) {
+                    errorDetails = "检测到强干扰：无法直连 Google 服务器。请检查是否已开启全局科学上网代理，或 API 接口是否被墙。";
+                }
+                
+                errorMsg.innerHTML = `⚠️ <b style="color:var(--gold)">量子态坍缩:</b> <br><span style="color:var(--gray)">${errorDetails}</span>`;
+                boxEl.appendChild(errorMsg);
+                boxEl.scrollTop = boxEl.scrollHeight;
+                
+                // 发送失败，将刚才那条记录退回，防止污染上下文记忆
+                if (window.chatHistory && window.chatHistory[type]) {
+                    window.chatHistory[type].pop(); 
+                }
+            }
         }
     </script>
 </body>

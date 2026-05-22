@@ -13,7 +13,7 @@
         /* 复用前面经典的左右三栏布局，微调间距 */
         .ep-grid {
             display: grid; 
-            grid-template-columns: 320px 1fr 350px; 
+            grid-template-columns: 320px 1fr 0px; 
             gap: 20px;
             padding: 16px; height: calc(100vh - 105px); box-sizing: border-box;
         }
@@ -26,7 +26,7 @@
 <body>
 
     <div class="header">
-        <h1 style="cursor: pointer;" onclick="window.location.href='../index.html'">⚛ IonSimulator</h1>
+        <h1 style="cursor: pointer;" onclick="window.location.href='../index.html#experiments'">⚛ IonSimulator</h1>
         <span>囚禁离子量子操作 · 教学演示 (赛博朋克版)</span>
     </div>
 
@@ -79,17 +79,7 @@
             
         </div>
 
-        <div class="ai-panel">
-            <h3>量子 AI 助手</h3>
-            <div class="chat-box" id="chat-box-ep">
-                <div class="chat-msg ai">警告：系统已进入非厄米区域。当前界面探测的是哈密顿量在奇异点（Exceptional Point）附近的相变。
-<br><br>你可以尝试让 <b>Ω = γ</b>，观察特征值实部闭合的现象。对这个物理机制有疑问可以随时提问。</div>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" class="chat-input" id="chat-in-ep" placeholder="提问：什么是PT对称性？">
-                <button class="btn button btn-send" onclick="handleSend('ep')">发送</button>
-            </div>
-        </div>
+        
     </div>
 
     <script src="../js/simulator.js"></script>
@@ -226,5 +216,22 @@
             }
         }
     </script>
+
+    <button class="ai-fab" onclick="toggleAIPanel()" title="召唤量子 AI IonGPT">🤖</button>
+
+    <div class="ai-sidebar" id="global-ai-panel">
+        <div class="ai-sidebar-header">
+            <h3 class="ai-sidebar-title">量子 AI 助手</h3>
+            <button class="ai-close-btn" onclick="toggleAIPanel()">✖</button>
+        </div>
+
+        <div class="ai-inner-slot">
+            <div class="chat-box" id="chat-box-ep"> <div class="chat-msg ai">你好！我是 IonGPT。当前已进入<b style="color:var(--primary-blue)">ep 点探测</b>模拟器，你可以调整左侧的参数，或者在下方问我任何物理原理。</div>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chat-in-ep" placeholder="输入指令或提问..."> <button class="btn-send" onclick="handleSend('ep')">发送</button> </div>
+    </div>
 </body>
 </html>

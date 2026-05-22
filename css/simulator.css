@@ -25,10 +25,10 @@ body {
   
   /* 🚀 大背景图片路径修改 */
   background: url('../images/背景照片.png') no-repeat center top fixed !important;
-  background-size: cover !important; /* 让图片等比例缩放铺满整个屏幕 */
+  background-size: cover !important; 
 }
 
-/* 头部样式：改变颜色为亮蓝，增加发光和装饰符号 */
+/* 头部样式 */
 .header {
   background: linear-gradient(180deg, var(--secondary-blue), var(--panel-blue));
   padding: 12px 24px; 
@@ -43,14 +43,13 @@ body {
   text-shadow: var(--blue-glow);
   display: flex; align-items: center; gap: 8px;
 }
-/* 增加头部装饰：类似图片中的括号符号 */
 .header h1::before { content: '< '; color: var(--cyan); text-shadow: var(--cyan-glow); }
 .header h1::after { content: ' >'; color: var(--cyan); text-shadow: var(--cyan-glow); }
 .header span { font-size: 0.9rem; color: var(--gray); }
 
-/* 标签页样式：使之更像图片左侧的按钮风格 */
+/* 标签页样式 */
 .tab-bar {
-  display: flex; gap: 0; /* 恢复无间距 */
+  display: flex; gap: 0; 
   background: var(--panel-blue); 
   border-bottom: 2px solid var(--secondary-blue);
 }
@@ -65,25 +64,26 @@ body {
 .tab-btn.active { 
   color: var(--gold); 
   text-shadow: var(--gold-glow);
-  border-bottom-color: var(--gold); /* 变为金色的发光下划线 */
+  border-bottom-color: var(--gold); 
 }
 
 .main-layout {
   display: grid; 
-  grid-template-columns: 280px 1fr 320px; 
-  gap: 16px;          /* 统一三列之间的间距 */
-  padding: 16px;      /* 统一四周的内边距，防止贴边 */
-  height: calc(100vh - 105px); /* 减去顶部 header 和 tab 的高度 */
+  /* 🚀 核心修改：移除原先最右侧的 320px 栏位，因为 AI 助手现在是全局悬浮的了 */
+  grid-template-columns: 280px 1fr; 
+  gap: 16px;          
+  padding: 16px;      
+  height: calc(100vh - 105px); 
   overflow: hidden;
   box-sizing: border-box;
 }
 
-/* 面板和卡片的 HUD 风格基础设置：深蓝背景，亮蓝发光边框，增加模拟角落装饰 */
+/* 面板和卡片的 HUD 风格基础设置 */
 .panel {
   background: var(--panel-blue); 
-  border-right: 1px solid rgba(0, 207, 255, 0.6); /* 恢复原版右边框，但用发光蓝色 */
-  box-shadow: inset -5px 0 15px rgba(0, 207, 255, 0.05); /* 仅内部微弱发光 */
-  padding: 18px; overflow-y: auto;
+  border-right: 1px solid rgba(0, 207, 255, 0.6); 
+  box-shadow: inset -5px 0 15px rgba(0, 207, 255, 0.05); 
+  padding: 18px; overflow-y: auto; border-right: none; 
 }
 .chart-card, .tip-bar, .theory-section {
   background: var(--panel-blue); 
@@ -92,15 +92,11 @@ body {
   position: relative; overflow: hidden; border-radius: 4px;
 }
 
-/* 面板特定样式：去掉原本的红色右侧边框 */
-.panel { padding: 18px; overflow-y: auto; border-right: none; }
 .panel h3 { font-size: 0.95rem; color: var(--cyan); margin-bottom: 14px; text-shadow: var(--cyan-glow); }
 .control-group { margin-bottom: 14px; }
 .control-group label { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--gray); margin-bottom: 4px; }
 .control-group label .val { color: var(--text); font-weight: 600; }
-/* 滑块 accent-color 改为亮蓝 */
 .control-group input[type=range] { width: 100%; accent-color: var(--primary-blue); }
-/* 下拉框样式：深色背景，亮蓝边框发光 */
 .control-group select { 
   width: 100%; padding: 6px 8px; border-radius: 4px; 
   border: 1px solid var(--primary-blue); 
@@ -108,7 +104,6 @@ body {
   box-shadow: var(--blue-glow);
 }
 .btn-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
-/* 按钮样式：由红改蓝，增加发光和透明背景 */
 .btn { 
   padding: 8px 16px; border: 1px solid var(--primary-blue); 
   border-radius: 4px; background: rgba(0, 207, 255, 0.1); color: var(--primary-blue); 
@@ -119,22 +114,21 @@ body {
 .btn.active-preset { background: rgba(0, 207, 255, 0.4); box-shadow: 0 0 15px rgba(0, 207, 255, 1); }
 
 .content-area { 
-  padding: 0;         /* 外围留白已由 main-layout 接管 */
+  padding: 0;         
   overflow-y: auto; 
   display: flex; 
   flex-direction: column; 
   gap: 16px; 
-  height: 100%;       /* 限制最大高度为 100%，确保内容超出时能滚动 */
+  height: 100%;       
 }
 .chart-row { display: grid; gap: 14px; }
 .chart-row.cols2 { grid-template-columns: 1fr 1fr; }
 .chart-row.cols1 { grid-template-columns: 1fr; }
-/* 卡片特定样式 */
 .chart-card { border-radius: 4px; padding: 14px; border: 1px solid rgba(0, 207, 255, 0.6); }
 .chart-card h4 { font-size: 0.85rem; color: var(--cyan); margin-bottom: 8px; text-shadow: var(--cyan-glow); }
 .chart-card canvas { width: 100% !important; max-height: 280px; }
 
-/* 提示栏样式：去掉原本的红色左侧边框，改为发光的深蓝 HUD 面板风格 */
+/* 提示栏样式 */
 .tip-bar { 
   background: rgba(15, 52, 96, 0.6); padding: 12px 16px;
   font-size: 0.85rem; line-height: 1.6; color: var(--gray);
@@ -147,13 +141,13 @@ body {
 .page { display: none; }
 .page.active { display: grid !important; }
 
-/* Gauge 量规部分：使用金色、亮蓝和青色发光 */
+/* Gauge 量规部分 */
 .gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .gauge-svg { width: 180px; height: 100px; }
 .gauge-val { font-size: 2rem; font-weight: 700; color: var(--gold); text-shadow: var(--gold-glow); }
 .gauge-label { font-size: 0.78rem; color: var(--gray); }
 
-/* Theory page 部分：应用 HUD 面板边框风格 */
+/* Theory page 部分 */
 .theory-section { padding: 20px; border-radius: 4px; margin-bottom: 14px; border-right: none; }
 .theory-section h3 { color: var(--cyan); margin-bottom: 10px; text-shadow: var(--cyan-glow); }
 .theory-section p, .theory-section li { font-size: 0.88rem; line-height: 1.7; color: var(--gray); }
@@ -164,76 +158,151 @@ body {
 }
 .formula-card .name { font-size: 0.78rem; color: var(--gray); margin-bottom: 6px; }
 
-/* 3. 新增：右侧 AI 对话面板的赛博朋克样式 */
-.ai-panel {
-  background: var(--panel-blue); 
-  border: 1px solid rgba(0, 207, 255, 0.6);
-  box-shadow: var(--blue-glow), inset 0 0 20px rgba(0, 207, 255, 0.1);
-  border-radius: 4px;
-  margin: 14px 10px 10px 0; 
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  
-  /* 🚀 终极高度限制：用 vh(视口高度) 绝对单位死死锁住，无论内容多少，它都不会变大 */
-  height: calc(100vh - 160px) !important; 
-  max-height: calc(100vh - 160px) !important;
-  box-sizing: border-box;
+/* ============================================================================== */
+/* ===================== 量子 AI 全局悬浮助手 (极致卡槽嵌套版) ===================== */
+/* ============================================================================== */
+
+/* 1. 悬浮唤醒按钮 (右上角) */
+.ai-fab {
+    position: fixed;
+    top: 15px;       
+    right: 90px;     
+    width: 50px; 
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(9, 14, 31, 0.8);
+    border: 2px solid var(--cyan);
+    box-shadow: 0 0 15px rgba(78, 204, 163, 0.5);
+    color: var(--cyan);
+    font-size: 24px;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer;
+    z-index: 9999;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.ai-panel h3 { font-size: 0.95rem; color: var(--cyan); text-shadow: var(--cyan-glow); margin-bottom: 0; }
+.ai-fab:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 0 25px rgba(78, 204, 163, 0.9);
+    background: rgba(78, 204, 163, 0.2);
+}
 
-/* 对话历史滚动区域 */
-.chat-box {
-  flex: 1;
-  
-  /* 🚀 杀手锏：强制基础高度为 0，让它自己去适应剩余空间，从而完美触发内部滚动条 */
-  height: 0 !important; 
-  overflow-y: auto !important;
+/* 2. 侧边栏外框 (加载机械框框图) */
+.ai-sidebar {
+    position: fixed;
+    top: 75px; 
+    right: -520px; 
+    width: 410px; 
+    height: calc(100vh - 100px); 
+    z-index: 9998;
+    display: flex;
+    flex-direction: column;
+    
+    background-image: url('../images/框框.png') !important; 
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 100% 100% !important;
+    background-color: transparent !important;
+    
+    border: none !important;
+    box-shadow: none !important;
 
-  background: var(--bg-blue);
-  border: 1px solid rgba(0, 207, 255, 0.3);
-  border-radius: 4px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  font-size: 0.85rem;
+    padding: 50px 30px 75px 30px !important; 
+    box-sizing: border-box;
+    transition: right 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ai-sidebar.open { right: 20px; }
+
+/* 3. 头部样式 */
+.ai-sidebar-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 15px; padding: 0 5px;
+}
+.ai-sidebar-title {
+    color: var(--cyan); font-size: 18px; font-weight: bold;
+    text-shadow: var(--cyan-glow); margin: 0; letter-spacing: 1px;
+}
+.ai-close-btn {
+    background: none; border: none; color: var(--gold);
+    font-size: 20px; cursor: pointer; transition: 0.2s;
+    text-shadow: 0 0 10px rgba(240, 192, 64, 0.6);
+}
+.ai-close-btn:hover { transform: scale(1.1); color: #fff; }
+
+/* 4. 核心卡槽：深蓝色 + 毛玻璃 */
+.ai-inner-slot {
+    flex: 1; 
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    
+    background: rgba(11, 20, 35, 0.65); 
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    border: 1px solid rgba(0, 207, 255, 0.15);
+    box-shadow: inset 0 0 20px rgba(0, 207, 255, 0.05);
+    border-radius: 4px;
+    
+    padding: 15px 5px 15px 15px;
+    margin-bottom: 15px; 
+}
+
+/* 聊天滚动区 */
+.ai-sidebar .chat-box {
+    flex: 1; overflow-y: auto; padding-right: 10px;
+    display: flex; flex-direction: column;
 }
 
 /* 气泡样式 */
-.chat-msg { padding: 8px 12px; border-radius: 4px; max-width: 85%; line-height: 1.4; word-break: break-all; }
-.chat-msg.ai { 
-  background: rgba(0, 207, 255, 0.08); 
-  color: var(--text); 
-  border-left: 2px solid var(--primary-blue); 
-  align-self: flex-start; 
+.chat-msg {
+    padding: 12px 16px; border-radius: 4px; max-width: 85%;
+    line-height: 1.6; font-size: 14px; margin-bottom: 15px; word-break: break-all;
 }
-.chat-msg.user { 
-  background: rgba(240, 192, 64, 0.08); 
-  color: var(--gold); 
-  border-right: 2px solid var(--gold); 
-  align-self: flex-end; 
+.chat-msg.ai {
+    background: rgba(15, 34, 66, 0.8); color: var(--text);
+    border-left: 2px solid var(--primary-blue); align-self: flex-start;
+}
+.chat-msg.ai b { color: var(--primary-blue); font-weight: normal; }
+
+.chat-msg.user {
+    background: rgba(240, 192, 64, 0.08); color: var(--gold);
+    border-right: 2px solid var(--gold); align-self: flex-end;
 }
 
-/* 输入区域 */
-.chat-input-area { display: flex; gap: 8px; }
+/* 5. 底部输入区 */
+.chat-input-area {
+    display: flex; gap: 10px; align-items: stretch; height: 40px;
+}
 .chat-input {
-  flex: 1; padding: 8px 12px; border-radius: 4px;
-  border: 1px solid var(--primary-blue); background: var(--bg-blue);
-  color: var(--text); font-size: 0.85rem; box-shadow: var(--blue-glow);
+    flex: 1; padding: 0 15px; border-radius: 4px;
+    background: rgba(5, 10, 20, 0.6); 
+    border: 1px solid rgba(0, 207, 255, 0.4);
+    color: var(--text); font-size: 14px;
+    outline: none; transition: 0.3s;
 }
-.chat-input:focus { outline: none; border-color: var(--cyan); box-shadow: var(--cyan-glow); }
-.btn-send { padding: 6px 12px; font-size: 0.8rem; }
+.chat-input:focus {
+    border-color: var(--cyan);
+    box-shadow: inset 0 0 10px rgba(78, 204, 163, 0.2), 0 0 5px rgba(78, 204, 163, 0.3);
+}
+.btn-send {
+    padding: 0 20px; border-radius: 4px; background: transparent;
+    border: 1px solid var(--primary-blue); color: var(--primary-blue);
+    cursor: pointer; font-size: 14px; transition: 0.2s;
+    display: flex; align-items: center; justify-content: center;
+}
+.btn-send:hover {
+    background: rgba(0, 207, 255, 0.2); color: #fff;
+    box-shadow: 0 0 10px rgba(0, 207, 255, 0.5);
+}
 
-/* Bloch sphere container are fine */
+/* ===================== 布洛赫球专属图片外框 ===================== */
 .bloch-wrap { 
   width: 100%; 
   height: 320px !important; 
   position: relative;
+  transform: translateY(-15px); 
 }
 
-/* 覆盖之前的全局 canvas 样式，彻底防止 3D 球体被拉伸成椭圆 */
 #bloch-sphere canvas {
   width: 100% !important;
   height: 100% !important;
@@ -241,178 +310,108 @@ body {
   outline: none;
 }
 
-/* ===================== 布洛赫球专属图片外框 ===================== */
 #bloch-card {
-  /* 🚀 布洛赫球框框图片路径修改 */
   background: url('../images/布洛赫球的框框.png') no-repeat center center; 
   background-size: 100% 100%; 
   background-color: transparent !important; 
   border: none !important; 
   box-shadow: none !important; 
-  
-  /* 🚀 修改 1：将原本顶部的 50px 缩小到 25px，释放上方空间 */
   padding: 50px 20px 20px 20px !important; 
   min-height: 380px !important; 
   flex-shrink: 0 !important;
 }
 
-#bloch-card::before, #bloch-card::after {
-  display: none !important;
-}
-
-/* 锁定布洛赫球容器高度，防止塌陷 */
-.bloch-wrap { 
-  width: 100%; 
-  height: 320px !important; 
-  position: relative;
-  /* 🚀 修改 2：给画板加一个向上的位移，数值越大球升得越高，你可以自己微调 (-10px 到 -30px 之间) */
-  transform: translateY(-15px); 
-}
+#bloch-card::before, #bloch-card::after { display: none !important; }
 
 /* ===================== 布居数图表专属图片外框 ===================== */
 #pop-card {
-  /* 🚀 布居数图表框框图片路径修改 */
   background: url('../images/布居数随时间演化图像框框.png') no-repeat center center; 
   background-size: 100% 100%; 
   background-color: transparent !important; 
   border: none !important; 
   box-shadow: none !important; 
   padding: 50px 20px 20px 20px !important; 
-  
-  /* 🚀 修改 1：强制拉高卡片，数值越大图表越高 (可根据你的屏幕微调 350px ~ 400px) */
   min-height: 380px !important; 
   display: flex;
   flex-direction: column;
 }
 
-/* 隐藏伪元素 */
-#pop-card::before, #pop-card::after {
-  display: none !important;
-}
+#pop-card::before, #pop-card::after { display: none !important; }
 
-/* 🚀 修改 2：解除 canvas 内部的高度限制，让图表跟着卡片一起变高 */
 #pop-card canvas {
   flex: 1;
   min-height: 300px !important; 
   max-height: none !important; 
 }
 
-/* 🚀 修改 3：确保中间区域内容溢出时可以滑动 */
 .content-area {
   overflow-y: auto !important;
-  padding-right: 8px !important; /* 给滑动条留出一点空间，防遮挡 */
+  padding-right: 8px !important; 
 }
 
 /* ===================== 全局：赛博朋克风滑动条美化 ===================== */
-::-webkit-scrollbar {
-  width: 6px;  /* 滚动条变细，更具科技感 */
-}
-::-webkit-scrollbar-track {
-  background: rgba(0, 207, 255, 0.05); /* 滚动条底色：微弱的亮蓝 */
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 207, 255, 0.4); /* 滑块颜色 */
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 207, 255, 0.8); /* 鼠标悬停时发亮 */
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(0, 207, 255, 0.05); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(0, 207, 255, 0.4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 207, 255, 0.8); }
 
 /* ===================== 左侧参数面板专属图片外框 ===================== */
 .panel {
-  /* 🚀 左侧面板框框图片路径修改 */
-  background: url('../images/框框.png') no-repeat center center !important; 
-  background-size: 100% 100% !important; /* 拉伸铺满整个左侧区域 */
-  
-  /* 清除之前代码写的底色、边框和阴影 */
-  background-color: transparent !important; 
-  border: none !important; 
-  box-shadow: none !important; 
-  
-  /* 🚀 调整内边距：给上下左右的科幻边框留出安全距离，防止滑块和文字贴边 */
-  padding: 40px 25px 30px 25px !important; 
-}
-
-/* 隐藏这个特定卡片原来的边角发光小方块伪元素，避免和图片打架 */
-.panel::before, .panel::after {
-  display: none !important;
-}
-
-/* ===================== 右侧 AI 面板专属图片外框 ===================== */
-.ai-panel {
-  /* 🚀 右侧AI面板框框图片路径修改 */
   background: url('../images/框框.png') no-repeat center center !important; 
   background-size: 100% 100% !important; 
   background-color: transparent !important; 
   border: none !important; 
   box-shadow: none !important; 
-  
-  /* 保持和左侧控制台完全一致的内边距，完美避开边框花纹 */
   padding: 40px 25px 30px 25px !important; 
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
 
-/* 隐藏可能冲突的伪元素 */
-.ai-panel::before, .ai-panel::after {
-  display: none !important;
-}
+.panel::before, .panel::after { display: none !important; }
+
+.panel h3 { margin-top: 5px !important; margin-bottom: 12px !important; }
+.panel .control-group { margin-bottom: 8px !important; }
 
 /* ===================== 底部提示栏专属图片外框 ===================== */
 .tip-bar {
-  /* 🚀 底部提示栏框框图片路径修改 */
   background: url('../images/框框.png') no-repeat center center !important; 
   background-size: 100% 100% !important; 
   background-color: transparent !important; 
   border: none !important; 
   box-shadow: none !important; 
-
-  /* 绝对禁止被弹性布局压缩 */
   flex-shrink: 0 !important; 
   margin-bottom: 20px !important; 
-  
-  /* 🚀 调整内边距：因为加上了边框，需要给上下左右留出更宽的距离，防止文字压到机械纹理上 */
   padding: 30px 40px !important; 
   line-height: 1.8 !important;
 }
-
-/* 隐藏可能冲突的边角发光线条 */
-.tip-bar::before, .tip-bar::after {
-  display: none !important;
-}
+.tip-bar::before, .tip-bar::after { display: none !important; }
 
 /* ===================== 剩下所有框框的全局替换 ===================== */
-/* 选中：除定制过的布洛赫球和布居数图表外的所有 chart-card，以及原理页的区块 */
 .chart-card:not(#bloch-card):not(#pop-card),
 .theory-section,
 .formula-card {
-  /* 🚀 其余通用框框图片路径修改 */
   background: url('../images/框框.png') no-repeat center center !important; 
   background-size: 100% 100% !important; 
   background-color: transparent !important; 
   border: none !important; 
   box-shadow: none !important; 
-  
-  /* 🚀 统一调整内边距：给上下左右留出安全距离，防止里面的图表和文字压到边框花纹 */
   padding: 35px 45px 30px 45px !important; 
   position: relative;
+  flex-shrink: 0 !important; 
+  overflow: visible !important; 
 }
 
-/* 隐藏可能会产生冲突的伪元素边角线条 */
 .chart-card:not(#bloch-card):not(#pop-card)::before, 
 .chart-card:not(#bloch-card):not(#pop-card)::after,
 .theory-section::before, .theory-section::after,
-.formula-card::before, .formula-card::after {
-  display: none !important;
-}
+.formula-card::before, .formula-card::after { display: none !important; }
 
-/* 确保内部的文字和图表不会被背景层遮挡 */
 .chart-card h4, .theory-section h3, .formula-card .name {
   position: relative;
   z-index: 1; 
-  margin-top: 5px; /* 让标题稍微往下一点，避开顶部边框 */
+  margin-top: 5px; 
 }
 
-/* 修复由于增加 Padding 导致公式卡片可能出现的高度问题 */
 .formula-card {
   min-height: 120px;
   display: flex;
@@ -420,41 +419,8 @@ body {
   justify-content: center;
 }
 
-/* ===================== 修复左侧参数面板上下溢出 ===================== */
-/* 1. 强制隐藏两离子页面底部冗余的三个旧预设按钮（它们极其占空间且已失效） */
-#panel-entangle .btn-row:nth-last-child(2) {
-  display: none !important;
-}
+#panel-entangle .btn-row:nth-last-child(2) { display: none !important; }
 
-/* 2. 压缩左侧面板所有控制组的垂直间距 */
-.panel .control-group {
-  margin-bottom: 8px !important;
-}
-
-/* 3. 调整标题间距，给顶部的科幻边框留出呼吸空间 */
-.panel h3 {
-  margin-top: 5px !important;
-  margin-bottom: 12px !important;
-}
-
-/* 4. 确保面板的内部内容被死死限制在框体内 */
-.panel {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-}
-
-/* 🚀 物理原理页面专属的双列布局：左边自适应铺满，右边固定320px给AI */
-#page-theory { 
-  grid-template-columns: 1fr 320px !important; 
-}
-
-/* ===================== 修复原理页卡片被压扁 ===================== */
-.theory-section,
-.formula-card {
-  /* 🚀 杀手锏：绝对禁止浏览器强行压缩它们的高度 */
-  flex-shrink: 0 !important; 
-  
-  /* 覆盖原本代码里隐藏溢出的设置，确保文字完整显示 */
-  overflow: visible !important; 
-}
+/* 🚀 物理原理页面专属布局：释放了旧 AI 面板后，让它也占满剩余空间 */
+#page-theory { grid-template-columns: 1fr !important; }
 /* ===================== END CSS MODIFIED ===================== */
